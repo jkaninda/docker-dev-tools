@@ -1,0 +1,133 @@
+version: "3.7"
+services:
+   zookeeper:
+    image: 'bitnami/zookeeper:latest'
+    container_name: zookeeper
+    restart: unless-stopped
+    ports:
+      - '2181:2181'
+    networks:
+     - internal
+
+    environment:
+      - ALLOW_ANONYMOUS_LOGIN=yes
+      - ZOOKEEPER_CLIENT_PORT=2181
+      - ZOOKEEPER_TICK_TIME=2000
+    volumes:
+      - ./zookeeper:/var/lib/zookeeper
+
+   kafka:
+    image: 'bitnami/kafka:latest'
+    container_name: kafka
+    restart: unless-stopped
+    environment:
+      - KAFKA_BROKER_ID=1
+      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
+      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT
+      - KAFKA_LISTENERS=PLAINTEXT://:9092
+      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    depends_on:
+      - zookeeper  
+    volumes:
+      - ./kafka:/var/lib/kafka
+    ports:
+      - 9092:80
+    networks:
+     - internal
+     - web 
+   redis:
+    image: redis:alpine
+    container_name: accounts-service-redis
+    restart: unless-stopped
+    command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD}"
+    volumes:
+      - ./data:/data
+    ports:
+     - 6379:6379
+    networks:
+       - internal
+       - web
+   mysql:
+    image: mysql
+    container_name: mysql
+    restart: unless-stopped
+    volumes:
+      - ./mysql:/var/lib/mysql
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+      MYSQL_USER: ${DB_USERNAME}
+    ports:
+      - 3309:3306  
+    labels:
+     - traefik.enable=false  
+    networks:
+      - internal
+      - web
+   phpmyadmin:
+    image: phpmyadmin
+    container_name: phpmyadmin
+    depends_on:
+       - mysql
+    environment:
+      PMA_HOST: mysql
+      PMA_PORT: 3306
+    restart: unless-stopped
+    ports:
+      - 8082:80
+    labels:
+     - traefik.enable=false  
+    networks:
+      - internal
+      - web
+   postgres:
+    image: postgres
+    container_name: postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_USER: ${DB_USERNAME}
+    ports:
+      - 5433:5432
+    labels:
+     - traefik.enable=false  
+    networks:
+      - internal
+      - web
+   portainer:
+    image: cr.portainer.io/portainer/portainer-ce
+    container_name: portainer
+    volumes:
+     - /var/run/docker.sock:/var/run/docker.sock
+     - ./portainer:/data
+    labels:
+      - traefik.http.routers.portainer.rule=Host(`portainer.localhost`)
+      - traefik.http.routers.portainer.tls=true
+      - traefik.http.routers.portainer.tls.certresolver=lets-encrypt
+      - traefik.port=80
+      ## Internal port
+      - traefik.http.services.portainer.loadbalancer.server.port=9000
+    ports:
+     - "6287:9000"
+     - "9000"
+    networks:
+     - web
+     - internal
+    environment:
+    - PORT=9000
+    - PORT_BIND_MODE=host
+    - PORT_BIND_ADDR=
+    - PORT_BIND_PORT=   
+ 
+networks:
+  web:
+    external: true
+    name: web
+  internal:
+    external: true
+    name: internal 
+    
+  
