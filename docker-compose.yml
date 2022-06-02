@@ -38,7 +38,7 @@ services:
      - web 
    redis:
     image: redis:alpine
-    container_name: accounts-service-redis
+    container_name: redis
     restart: unless-stopped
     command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD}"
     volumes:
