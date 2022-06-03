@@ -5,4 +5,5 @@ redis
 portainer
 zookeeper
 elasticsearch
+postgres
 .history
