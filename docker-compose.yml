@@ -60,7 +60,7 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_USER: ${DB_USERNAME}
     ports:
-      - 3309:3306  
+      - 3306:3306  
     labels:
      - traefik.enable=false  
     networks:
@@ -100,6 +100,7 @@ services:
    portainer:
     image: cr.portainer.io/portainer/portainer-ce
     container_name: portainer
+    restart: unless-stopped
     volumes:
      - /var/run/docker.sock:/var/run/docker.sock
      - ./portainer:/data
