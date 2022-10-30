@@ -1,8 +1,9 @@
 version: "3.7"
 services:
    zookeeper:
-    image: 'bitnami/zookeeper:latest'
+    image: 'bitnami/zookeeper:3.8.0'
     container_name: zookeeper
+    pull_policy: if_not_present
     restart: unless-stopped
     ports:
       - '2181:2181'
@@ -17,9 +18,15 @@ services:
       - ./zookeeper:/var/lib/zookeeper
 
    kafka:
-    image: 'bitnami/kafka:latest'
+    image: 'bitnami/kafka:3.2.3'
     container_name: kafka
+    pull_policy: if_not_present
     restart: unless-stopped
+    #command:
+    # - kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic main
+    # - kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic chats
+    # - kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic storage
+
     environment:
       - KAFKA_BROKER_ID=1
       - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
@@ -27,18 +34,37 @@ services:
       - KAFKA_LISTENERS=PLAINTEXT://:9092
       - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
       - ALLOW_PLAINTEXT_LISTENER=yes
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_CFG_TOPIC_CREATE_ENABLE=true
     depends_on:
       - zookeeper  
     volumes:
       - ./kafka:/var/lib/kafka
     ports:
-      - 9092:80
+      - 9092:9092
     networks:
      - internal
-     - web 
+     - web
+   kafka-ui:
+    image: provectuslabs/kafka-ui:master
+    pull_policy: if_not_present
+    container_name: kafka-ui
+    ports:
+      - "8080:8080"
+    restart: unless-stopped
+    environment:
+      - KAFKA_CLUSTERS_0_NAME=local
+      - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
+      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
+      # If you prefer UI for Apache Kafka in read only mode
+     # - KAFKA_CLUSTERS_0_READONLY=true
+    networks:
+     - web
+     - internal  
    redis:
     image: redis:alpine
     container_name: redis
+    pull_policy: if_not_present
     restart: unless-stopped
     command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD}"
     volumes:
@@ -49,8 +75,9 @@ services:
        - internal
        - web
    mysql:
-    image: mysql
+    image: mysql:5.7.39
     container_name: mysql
+    pull_policy: if_not_present
     restart: unless-stopped
     volumes:
       - ./mysql:/var/lib/mysql
@@ -67,7 +94,8 @@ services:
       - internal
       - web
    phpmyadmin:
-    image: phpmyadmin
+    image: phpmyadmin:5.2.0-apache
+    pull_policy: if_not_present
     container_name: phpmyadmin
     depends_on:
        - mysql
@@ -83,8 +111,9 @@ services:
       - internal
       - web
    postgres:
-    image: postgres
+    image: postgres:14.5 
     container_name: postgres
+    pull_policy: if_not_present
     restart: unless-stopped
     volumes:
       - ./postgres:/var/lib/postgresql/data
@@ -99,38 +128,12 @@ services:
     networks:
       - internal
       - web
-   portainer:
-    image: cr.portainer.io/portainer/portainer-ce
-    container_name: portainer
-    restart: unless-stopped
-    volumes:
-     - /var/run/docker.sock:/var/run/docker.sock
-     - ./portainer:/data
-    labels:
-      - traefik.http.routers.portainer.rule=Host(`portainer.localhost`)
-      - traefik.http.routers.portainer.tls=true
-      - traefik.http.routers.portainer.tls.certresolver=lets-encrypt
-      - traefik.port=80
-      ## Internal port
-      - traefik.http.services.portainer.loadbalancer.server.port=9000
-    ports:
-     - "6287:9000"
-     - "9000"
-    networks:
-     - web
-     - internal
-    environment:
-    - PORT=9000
-    - PORT_BIND_MODE=host
-    - PORT_BIND_ADDR=
-    - PORT_BIND_PORT=   
- 
 networks:
   web:
-    external: true
+    external: false
     name: web
   internal:
-    external: true
+    external: false
     name: internal 
     
   
