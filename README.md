@@ -1,20 +1,21 @@
 # docker-dev-tools
 Docker developer tools
 Tools list:
- - zookeeper
- - kafka
- - redis
- - mysql
- - phpmyadmin
- - postgres
- - portainer
+ - Zookeeper
+ - Kafka
+ - Redis
+ - Mysql
+ - Phpmyadmin
+ - Postgres
+ - Minio Object Storage, S3 alternative
 
-To run :
-```
+## To run :
+> docker network create internal
+
+```sh
 docker-compose up -d
 
 ```
 
 Networks :
- - web
  - internal

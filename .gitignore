@@ -6,4 +6,6 @@ portainer
 zookeeper
 elasticsearch
 postgres
+minio
+redis
 .history
