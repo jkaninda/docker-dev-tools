@@ -1,5 +1,5 @@
 # docker-dev-tools
-Docker local developement tools
+Docker local development tools
 
 Tools:
  - Zookeeper
