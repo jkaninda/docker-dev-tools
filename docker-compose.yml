@@ -1,45 +1,14 @@
 version: "3.7"
 services:
-   zookeeper:
-    image: 'bitnami/zookeeper:3.8.0'
-    container_name: zookeeper
-    pull_policy: if_not_present
-    restart: unless-stopped
-    ports:
-      - '2181:2181'
-    networks:
-     - internal
-
-    environment:
-      - ALLOW_ANONYMOUS_LOGIN=yes
-      - ZOOKEEPER_CLIENT_PORT=2181
-      - ZOOKEEPER_TICK_TIME=2000
-    volumes:
-      - ./zookeeper:/var/lib/zookeeper
-
    kafka:
     image: 'bitnami/kafka:3.2.3'
     container_name: kafka
     pull_policy: if_not_present
     restart: unless-stopped
-    #command:
-    # - kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic main
-    # - kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic chats
-    # - kafka-topics.sh --create --zookeeper zookeeper:2181 --replication-factor 1 --partitions 1 --topic storage
-
     environment:
-      - KAFKA_BROKER_ID=1
-      - KAFKA_ZOOKEEPER_CONNECT=zookeeper:2181
-      - KAFKA_LISTENER_SECURITY_PROTOCOL_MAP=PLAINTEXT:PLAINTEXT
-      - KAFKA_LISTENERS=PLAINTEXT://:9092
-      - KAFKA_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
       - ALLOW_PLAINTEXT_LISTENER=yes
-      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
-      - KAFKA_CFG_TOPIC_CREATE_ENABLE=true
-    depends_on:
-      - zookeeper  
     volumes:
-      - ./kafka:/var/lib/kafka
+      - ./kafka:/bitnami/kafka
     ports:
       - 9092:9092
     networks:
@@ -49,15 +18,11 @@ services:
     pull_policy: if_not_present
     container_name: kafka-ui
     ports:
-      - "8080:8080"
+      - "8074:8080"
     restart: unless-stopped
     environment:
       - KAFKA_CLUSTERS_0_NAME=dev-cluster
       - KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS=kafka:9092
-      - KAFKA_CLUSTERS_0_ZOOKEEPER=zookeeper:2181
-      - KAFKA_CLUSTERS_1_NAME=prod-cluster
-      - KAFKA_CLUSTERS_1_BOOTSTRAPSERVERS=kafka:9092
-      - KAFKA_CLUSTERS_1_ZOOKEEPER=zookeeper:2181
       # If you prefer UI for Apache Kafka in read only mode
      # - KAFKA_CLUSTERS_0_READONLY=true
     networks:
@@ -87,9 +52,7 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_USER: ${DB_USERNAME}
     ports:
-      - 3306:3306  
-    labels:
-     - traefik.enable=false  
+      - 3306:3306   
     networks:
       - internal
    phpmyadmin:
@@ -103,9 +66,7 @@ services:
       PMA_PORT: 3306
     restart: unless-stopped
     ports:
-      - 8082:80
-    labels:
-     - traefik.enable=false  
+      - 8075:80 
     networks:
       - internal
    postgres:
@@ -123,12 +84,25 @@ services:
       - 5432:5432 
     networks:
       - internal
+   pgadmin4:
+    container_name: pgadmin4
+    image: dpage/pgadmin4:7.3
+    pull_policy: if_not_present
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=admin@example.com
+      - PGADMIN_DEFAULT_PASSWORD=password
+    ports:
+      - 8076:80
+    networks:
+      - internal
    minio:
-    image: 'bitnami/minio:2022.12.12'
+    image: 'bitnami/minio:2023.7.7'
     container_name:  minio
     restart: unless-stopped
     ports:
+      # API Port
       - '9000:9000'
+      # Console Port
       - '9001:9001'
     environment:
       - MINIO_ROOT_USER=admin
@@ -141,5 +115,3 @@ networks:
   internal:
     external: false
     name: internal 
-    
-  
