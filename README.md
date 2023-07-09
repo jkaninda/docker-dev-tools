@@ -1,6 +1,6 @@
 # docker-dev-tools
-Docker developer tools
-Tools list:
+Docker local developement tools
+Tools:
  - Zookeeper
  - Kafka
  - Redis
