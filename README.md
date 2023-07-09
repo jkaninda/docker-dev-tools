@@ -8,6 +8,7 @@ Tools list:
  - Phpmyadmin
  - Postgres
  - Minio Object Storage, S3 alternative
+ - pgadmin4
 
 ## To run :
 > docker network create internal
