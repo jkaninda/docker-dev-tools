@@ -9,3 +9,4 @@ postgres
 minio
 redis
 .history
+.env
