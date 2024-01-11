@@ -3,19 +3,17 @@ services:
    kafka:
     image: 'bitnami/kafka:3.2.3'
     container_name: kafka
-    pull_policy: if_not_present
     restart: unless-stopped
     environment:
       - ALLOW_PLAINTEXT_LISTENER=yes
     volumes:
       - ./kafka:/bitnami/kafka
     ports:
-      - 9092:9092
+      - "9092:9092"
     networks:
      - internal
    kafka-ui:
     image: provectuslabs/kafka-ui:master
-    pull_policy: if_not_present
     container_name: kafka-ui
     ports:
       - "8074:8080"
@@ -30,19 +28,17 @@ services:
    redis:
     image: redis:alpine
     container_name: redis
-    pull_policy: if_not_present
     restart: unless-stopped
     command: redis-server --appendonly yes --requirepass "${REDIS_PASSWORD}"
     volumes:
       - ./redis:/data
     ports:
-     - 6379:6379
+     - "6379:6379"
     networks:
        - internal
    mysql:
     image: mysql:5.7.39
     container_name: mysql
-    pull_policy: if_not_present
     restart: unless-stopped
     volumes:
       - ./mysql:/var/lib/mysql
@@ -52,12 +48,11 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
       MYSQL_USER: ${DB_USERNAME}
     ports:
-      - 3306:3306   
+      - "3306:3306"
     networks:
       - internal
    phpmyadmin:
     image: phpmyadmin:5.2.0-apache
-    pull_policy: if_not_present
     container_name: phpmyadmin
     depends_on:
        - mysql
@@ -66,13 +61,12 @@ services:
       PMA_PORT: 3306
     restart: unless-stopped
     ports:
-      - 8075:80 
+      - "8075:80"
     networks:
       - internal
    postgres:
     image: postgres:14.5 
     container_name: postgres
-    pull_policy: if_not_present
     restart: unless-stopped
     volumes:
       - ./postgres:/var/lib/postgresql/data
@@ -81,18 +75,17 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_USER: ${DB_USERNAME}
     ports:
-      - 5432:5432 
+      - "5432:5432"
     networks:
       - internal
    pgadmin4:
     container_name: pgadmin4
     image: dpage/pgadmin4:7.3
-    pull_policy: if_not_present
     environment:
       - PGADMIN_DEFAULT_EMAIL=admin@example.com
       - PGADMIN_DEFAULT_PASSWORD=password
     ports:
-      - 8076:80
+      - "8076:80"
     networks:
       - internal
    minio:
