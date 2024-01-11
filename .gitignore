@@ -9,3 +9,5 @@ postgres
 minio
 redis
 .history
+.idea
+.env
